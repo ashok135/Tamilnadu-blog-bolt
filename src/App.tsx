@@ -15,7 +15,10 @@ function App() {
 
   useEffect(() => {
     // Initialize sample blogs on first load
-    initializeSampleBlogs();
+    const initBlogs = async () => {
+      await initializeSampleBlogs();
+    };
+    initBlogs();
     
     // Add custom CSS for animations
     const style = document.createElement('style');

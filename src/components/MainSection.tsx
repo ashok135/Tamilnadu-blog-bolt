@@ -2,11 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getBlogs } from '../utils/storage';
+import { BlogPost } from '../types/blog';
 
 const MainSection: React.FC = () => {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const blogs = getBlogs();
+  const [blogs, setBlogs] = React.useState<BlogPost[]>([]);
+
+  React.useEffect(() => {
+    const loadBlogs = async () => {
+      const blogData = await getBlogs();
+      setBlogs(blogData);
+    };
+    loadBlogs();
+  }, []);
 
   // Get latest blogs with images for the carousel
   const blogsWithImages = blogs.filter(blog => blog.imageUrl).slice(0, 5);
@@ -120,7 +129,7 @@ const MainSection: React.FC = () => {
           {sidebarButtons.map((button, index) => (
             <button
               key={index}
-              className="w-full bg-[#2a6db0] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#002c6d] transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95"
+              className="w-full bg-[#2a6db0] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#002c6d] transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95 space-y-4"
             >
               {button}
             </button>

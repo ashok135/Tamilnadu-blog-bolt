@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getBlogs } from '../utils/storage';
 import { Calendar } from 'lucide-react';
+import { BlogPost, CATEGORY_LABELS, BlogCategory } from '../types/blog';
 
 interface BlogSectionProps {
   onBlogClick?: (blogId: string) => void;
@@ -9,7 +10,15 @@ interface BlogSectionProps {
 
 const BlogSection: React.FC<BlogSectionProps> = ({ onBlogClick }) => {
   const navigate = useNavigate();
-  const blogs = getBlogs();
+  const [blogs, setBlogs] = React.useState<BlogPost[]>([]);
+
+  React.useEffect(() => {
+    const loadBlogs = async () => {
+      const blogData = await getBlogs();
+      setBlogs(blogData);
+    };
+    loadBlogs();
+  }, []);
 
   const handleBlogClick = (blogId: string) => {
     if (onBlogClick) {
@@ -48,6 +57,12 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onBlogClick }) => {
               )}
               
               <div className="p-6">
+               <div className="mb-3">
+                 <span className="inline-block bg-[#2a6db0] text-white text-xs px-2 py-1 rounded-full">
+                   {CATEGORY_LABELS[blog.category as BlogCategory]}
+                 </span>
+               </div>
+               
                 <h3 className="text-xl font-bold text-[#002c6d] mb-3 line-clamp-2">
                   {blog.title}
                 </h3>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, LogOut, Save, X } from 'lucide-react';
 import { getBlogs, addBlog, updateBlog, deleteBlog, isAuthenticated, logout } from '../utils/storage';
-import { BlogPost } from '../types/blog';
+import { BlogPost, BLOG_CATEGORIES, CATEGORY_LABELS, BlogCategory } from '../types/blog';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ const AdminDashboard: React.FC = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
+    category: 'general' as BlogCategory,
     imageUrl: '',
   });
 
@@ -20,7 +21,12 @@ const AdminDashboard: React.FC = () => {
       navigate('/admin/login');
       return;
     }
-    setBlogs(getBlogs());
+    
+    const loadBlogs = async () => {
+      const blogData = await getBlogs();
+      setBlogs(blogData);
+    };
+    loadBlogs();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -28,44 +34,48 @@ const AdminDashboard: React.FC = () => {
     navigate('/');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.content.trim()) return;
 
     if (isEditing) {
-      const updated = updateBlog(isEditing, formData);
+      const updated = await updateBlog(isEditing, formData);
       if (updated) {
-        setBlogs(getBlogs());
+        const blogData = await getBlogs();
+        setBlogs(blogData);
         setIsEditing(null);
       }
     } else {
-      addBlog(formData);
-      setBlogs(getBlogs());
+      await addBlog(formData);
+      const blogData = await getBlogs();
+      setBlogs(blogData);
       setShowAddForm(false);
     }
 
-    setFormData({ title: '', content: '', imageUrl: '' });
+    setFormData({ title: '', content: '', category: 'general', imageUrl: '' });
   };
 
   const handleEdit = (blog: BlogPost) => {
     setFormData({
       title: blog.title,
       content: blog.content,
+      category: blog.category as BlogCategory,
       imageUrl: blog.imageUrl || '',
     });
     setIsEditing(blog.id);
     setShowAddForm(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('இந்த பதிவை நீக்க வேண்டுமா?')) {
-      deleteBlog(id);
-      setBlogs(getBlogs());
+      await deleteBlog(id);
+      const blogData = await getBlogs();
+      setBlogs(blogData);
     }
   };
 
   const resetForm = () => {
-    setFormData({ title: '', content: '', imageUrl: '' });
+    setFormData({ title: '', content: '', category: 'general', imageUrl: '' });
     setIsEditing(null);
     setShowAddForm(false);
   };
@@ -135,6 +145,24 @@ const AdminDashboard: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  வகை *
+                </label>
+                <select
+                  required
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value as BlogCategory })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2a6db0] focus:border-transparent"
+                >
+                  {BLOG_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {CATEGORY_LABELS[category]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   படம் URL (விருப்பம்)
                 </label>
                 <input
@@ -198,6 +226,11 @@ const AdminDashboard: React.FC = () => {
                       <h4 className="text-lg font-bold text-[#002c6d] mb-2">
                         {blog.title}
                       </h4>
+                      <div className="mb-2">
+                        <span className="inline-block bg-[#2a6db0] text-white text-xs px-2 py-1 rounded-full">
+                          {CATEGORY_LABELS[blog.category as BlogCategory]}
+                        </span>
+                      </div>
                       <p className="text-gray-600 mb-3 line-clamp-2">
                         {blog.content}
                       </p>

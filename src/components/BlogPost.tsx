@@ -2,12 +2,47 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import { getBlogs } from '../utils/storage';
+import { BlogPost as BlogPostType, CATEGORY_LABELS, BlogCategory } from '../types/blog';
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const blogs = getBlogs();
-  const blog = blogs.find(b => b.id === id);
+  const [blog, setBlog] = React.useState<BlogPostType | null>(null);
+  const [relatedBlogs, setRelatedBlogs] = React.useState<BlogPostType[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadBlog = async () => {
+      try {
+        const blogs = await getBlogs();
+        const foundBlog = blogs.find(b => b.id === id);
+        setBlog(foundBlog || null);
+        
+        if (foundBlog) {
+          const related = blogs
+            .filter(b => b.id !== foundBlog.id && b.category === foundBlog.category)
+            .slice(0, 3);
+          setRelatedBlogs(related);
+        }
+      } catch (error) {
+        console.error('Error loading blog:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadBlog();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg text-gray-600">ஏற்றுகிறது...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!blog) {
     return (
@@ -60,6 +95,12 @@ const BlogPost: React.FC = () => {
           {/* Content */}
           <div className="p-8">
             <header className="mb-6">
+              <div className="mb-4">
+                <span className="inline-block bg-[#2a6db0] text-white text-sm px-3 py-1 rounded-full">
+                  {CATEGORY_LABELS[blog.category as BlogCategory]}
+                </span>
+              </div>
+              
               <h1 className="text-3xl md:text-4xl font-bold text-[#002c6d] mb-4 leading-tight">
                 {blog.title}
               </h1>
@@ -115,10 +156,7 @@ const BlogPost: React.FC = () => {
         <section className="mt-12">
           <h2 className="text-2xl font-bold text-[#002c6d] mb-6">தொடர்புடைய பதிவுகள்</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogs
-              .filter(b => b.id !== blog.id)
-              .slice(0, 3)
-              .map((relatedBlog) => (
+            {relatedBlogs.map((relatedBlog) => (
                 <article
                   key={relatedBlog.id}
                   onClick={() => navigate(`/blog/${relatedBlog.id}`)}
@@ -135,6 +173,11 @@ const BlogPost: React.FC = () => {
                   )}
                   
                   <div className="p-4">
+                    <div className="mb-2">
+                      <span className="inline-block bg-[#2a6db0] text-white text-xs px-2 py-1 rounded-full">
+                        {CATEGORY_LABELS[relatedBlog.category as BlogCategory]}
+                      </span>
+                    </div>
                     <h3 className="font-bold text-[#002c6d] mb-2 line-clamp-2">
                       {relatedBlog.title}
                     </h3>

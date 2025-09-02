@@ -1,12 +1,33 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Search } from 'lucide-react';
-import { getBlogs } from '../utils/storage';
+import { getBlogs, getBlogsByCategory } from '../utils/storage';
+import { BlogPost, BLOG_CATEGORIES, CATEGORY_LABELS, BlogCategory } from '../types/blog';
 
 const AllBlogs: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const blogs = getBlogs();
+  const [selectedCategory, setSelectedCategory] = useState<BlogCategory | 'all'>('all');
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const loadBlogs = async () => {
+      setLoading(true);
+      try {
+        const blogData = selectedCategory === 'all' 
+          ? await getBlogs() 
+          : await getBlogsByCategory(selectedCategory);
+        setBlogs(blogData);
+      } catch (error) {
+        console.error('Error loading blogs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadBlogs();
+  }, [selectedCategory]);
 
   const filteredBlogs = blogs.filter(blog =>
     blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -33,6 +54,36 @@ const AllBlogs: React.FC = () => {
 
       {/* Search and Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Category Filter */}
+        <div className="mb-8">
+          <h3 className="text-lg font-medium text-gray-700 mb-4">வகை வாரியாக பார்க்க:</h3>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                selectedCategory === 'all'
+                  ? 'bg-[#002c6d] text-white'
+                  : 'bg-white text-[#002c6d] border border-[#002c6d] hover:bg-[#002c6d] hover:text-white'
+              }`}
+            >
+              அனைத்தும்
+            </button>
+            {BLOG_CATEGORIES.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-[#002c6d] text-white'
+                    : 'bg-white text-[#002c6d] border border-[#002c6d] hover:bg-[#002c6d] hover:text-white'
+                }`}
+              >
+                {CATEGORY_LABELS[category]}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Search Bar */}
         <div className="max-w-md mx-auto mb-8">
           <div className="relative">
@@ -58,7 +109,11 @@ const AllBlogs: React.FC = () => {
         </div>
 
         {/* Blogs Grid */}
-        {filteredBlogs.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">ஏற்றுகிறது...</p>
+          </div>
+        ) : filteredBlogs.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">
               {searchTerm ? 'தேடல் முடிவுகள் கிடைக்கவில்லை' : 'அறிவிப்புகள் எதுவும் கிடைக்கவில்லை'}
@@ -83,6 +138,12 @@ const AllBlogs: React.FC = () => {
                 )}
                 
                 <div className="p-6">
+                  <div className="mb-3">
+                    <span className="inline-block bg-[#2a6db0] text-white text-xs px-2 py-1 rounded-full">
+                      {CATEGORY_LABELS[blog.category as BlogCategory]}
+                    </span>
+                  </div>
+                  
                   <h3 className="text-xl font-bold text-[#002c6d] mb-3 line-clamp-2">
                     {blog.title}
                   </h3>
