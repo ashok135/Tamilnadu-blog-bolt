@@ -11,7 +11,10 @@ export const getBlogs = async (): Promise<BlogPost[]> => {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching blogs:', error);
+      return [];
+    }
 
     return data.map(post => ({
       id: post.id,
@@ -36,7 +39,10 @@ export const getBlogsByCategory = async (category: BlogCategory): Promise<BlogPo
       .eq('category', category)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching blogs by category:', error);
+      return [];
+    }
 
     return data.map(post => ({
       id: post.id,
@@ -66,7 +72,10 @@ export const addBlog = async (blog: Omit<BlogPost, 'id' | 'createdAt' | 'updated
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error adding blog:', error);
+      return null;
+    }
 
     return {
       id: data.id,
@@ -97,7 +106,10 @@ export const updateBlog = async (id: string, updates: Partial<BlogPost>): Promis
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating blog:', error);
+      return null;
+    }
 
     return {
       id: data.id,
@@ -121,7 +133,10 @@ export const deleteBlog = async (id: string): Promise<boolean> => {
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error deleting blog:', error);
+      return false;
+    }
     return true;
   } catch (error) {
     console.error('Error deleting blog:', error);
