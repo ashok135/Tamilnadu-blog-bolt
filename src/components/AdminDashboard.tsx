@@ -12,7 +12,7 @@ const AdminDashboard: React.FC = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    category: 'general' as BlogCategory,
+    category: 'blog' as BlogCategory,
     imageUrl: '',
   });
 
@@ -75,7 +75,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const resetForm = () => {
-    setFormData({ title: '', content: '', category: 'general', imageUrl: '' });
+    setFormData({ title: '', content: '', category: 'blog', imageUrl: '' });
     setIsEditing(null);
     setShowAddForm(false);
   };

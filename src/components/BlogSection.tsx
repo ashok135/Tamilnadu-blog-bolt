@@ -15,7 +15,8 @@ const BlogSection: React.FC<BlogSectionProps> = ({ onBlogClick }) => {
   React.useEffect(() => {
     const loadBlogs = async () => {
       const blogData = await getBlogs();
-      setBlogs(blogData);
+      // Filter to show only blog posts, not events
+      setBlogs(blogData.filter(blog => blog.category === 'blog'));
     };
     loadBlogs();
   }, []);

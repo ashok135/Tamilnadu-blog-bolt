@@ -22,7 +22,7 @@ const MainSection: React.FC<MainSectionProps> = ({ onCategoryClick }) => {
   }, []);
 
   // Get latest blogs with images for the carousel
-  const blogsWithImages = blogs.filter(blog => blog.imageUrl).slice(0, 5);
+  const blogsWithImages = blogs.filter(blog => blog.imageUrl && blog.category === 'blog').slice(0, 5);
   
   // Fallback images if no blogs with images exist
   const fallbackImages = [

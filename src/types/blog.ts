@@ -2,7 +2,7 @@ export interface BlogPost {
   id: string;
   title: string;
   content: string;
-  category: string;
+  category: 'blog' | 'event';
   imageUrl?: string;
   createdAt: string;
   updatedAt: string;
@@ -13,26 +13,11 @@ export interface User {
   isAuthenticated: boolean;
 }
 
-export const BLOG_CATEGORIES = [
-  'general',
-  'announcements',
-  'elections',
-  'training',
-  'welfare',
-  'government-orders',
-  'events',
-  'news'
-] as const;
+export const BLOG_CATEGORIES = ['blog', 'event'] as const;
 
-export type BlogCategory = typeof BLOG_CATEGORIES[number];
+export type BlogCategory = 'blog' | 'event';
 
 export const CATEGORY_LABELS: Record<BlogCategory, string> = {
-  general: 'பொதுவானது',
-  announcements: 'அறிவிப்புகள்',
-  elections: 'தேர்தல்கள்',
-  training: 'பயிற்சிகள்',
-  welfare: 'நலன்புரி',
-  'government-orders': 'அரசாணைகள்',
-  events: 'நிகழ்வுகள்',
-  news: 'செய்திகள்'
+  blog: 'பதிவுகள்',
+  event: 'நிகழ்வுகள்'
 };
