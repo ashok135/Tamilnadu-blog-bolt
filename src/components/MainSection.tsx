@@ -4,7 +4,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getBlogs } from '../utils/storage';
 import { BlogPost } from '../types/blog';
 
-const MainSection: React.FC = () => {
+interface MainSectionProps {
+  onCategoryClick?: (category: string) => void;
+}
+
+const MainSection: React.FC<MainSectionProps> = ({ onCategoryClick }) => {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [blogs, setBlogs] = React.useState<BlogPost[]>([]);
@@ -32,14 +36,14 @@ const MainSection: React.FC = () => {
     : fallbackImages;
 
   const sidebarButtons = [
-    'வரலாறு',
-    'கிராம நிர்வாகம்',
-    'கிராம உதவியாளர்',
-    'நமது சங்கம்',
-    'பயிற்சிகள்',
-    'அறிவிக்கைகள்',
-    'திட்டங்கள்',
-    'கோரிக்கைகள்',
+    { id: 'history', label: 'வரலாறு' },
+    { id: 'village-admin', label: 'கிராம நிர்வாகம்' },
+    { id: 'village-assistant', label: 'கிராம உதவியாளர்' },
+    { id: 'our-association', label: 'நமது சங்கம்' },
+    { id: 'training', label: 'பயிற்சிகள்' },
+    { id: 'announcements', label: 'அறிவிக்கைகள்' },
+    { id: 'schemes', label: 'திட்டங்கள்' },
+    { id: 'demands', label: 'கோரிக்கைகள்' },
   ];
 
   const nextImage = () => {
@@ -129,9 +133,10 @@ const MainSection: React.FC = () => {
           {sidebarButtons.map((button, index) => (
             <button
               key={index}
+              onClick={() => onCategoryClick && onCategoryClick(button.id)}
               className="w-full bg-[#2a6db0] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#002c6d] transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95 space-y-4"
             >
-              {button}
+              {button.label}
             </button>
           ))}
         </div>
